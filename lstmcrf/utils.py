@@ -37,12 +37,12 @@ def load_data_and_labels(filename, encoding='utf-8'):
                 chunks.append(chunk)
             else:
                 if words:
-                   sents.append(words)
-                   labels.append(tags)
-                   clabels.append(chunks)
+                    sents.append(words)
+                    labels.append(tags)
+                    clabels.append(chunks)
                 words, tags, chunks = [], [], []
 
-    return sents, labels, clabels 
+    return sents, labels, clabels
 
 
 class NERSequence(Sequence):

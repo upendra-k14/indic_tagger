@@ -1,5 +1,14 @@
-import sys,os.path as path
-sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+import os
+import re
+import argparse
+from tagger.utils.writer import write_to_file
+from tagger.src import data_reader
+import logging
+import codecs
+import sys
+import os.path as path
+sys.path.append(path.dirname(path.dirname(
+    path.dirname(path.abspath(__file__)))))
 
 """
 Convert SSF To CONLL format
@@ -41,52 +50,40 @@ CONLL format: (BI format)
 
 """
 
-import re, os
-import codecs
-import logging
-from tagger.src import data_reader
-from tagger.utils.writer import write_to_file
-import argparse
 logger = logging.getLogger(__name__)
 
+
 def convert_format(sents, filename):
-	with codecs.open(filename, 'w', encoding='utf8', errors='ignore') as fp:
-		for sent in sents:
-			for index, item in enumerate(sent):
-				tag = item[1].replace("?","").replace(":","")
-				chunk = item[2].replace("?","").replace(":","")
-				word = item[0].replace("?","").replace(":","")
-				if tag:
-					if word:
-						fp.write(str(index+1) + "\t" + word +"\t" + tag+"\t"+chunk + "\n")
-			fp.write("\n")
+    with codecs.open(filename, 'w', encoding='utf8', errors='ignore') as fp:
+        for sent in sents:
+            for index, item in enumerate(sent):
+                tag = item[1].replace("?", "").replace(":", "")
+                chunk = item[2].replace("?", "").replace(":", "")
+                word = item[0].replace("?", "").replace(":", "")
+                if tag:
+                    if word:
+                        fp.write(str(index+1) + "\t" + word +
+                                 "\t" + tag+"\t"+chunk + "\n")
+            fp.write("\n")
+
 
 def get_args():
     ''' This function parses and return arguments passed in'''
-    parser = argparse.ArgumentParser(description='Format Converter from SSF to CONLL')
+    parser = argparse.ArgumentParser(
+        description='Format Converter from SSF to CONLL')
     parser.add_argument("-i", "--input_path", dest="file_path", type=str, metavar='<str>', required=True,
                         help="File to be converted file path ex: data/test/telugu/test.wx.conll")
     parser.add_argument("-o", "--output_path", dest="output_path", type=str, metavar='<str>', required=True,
-                         help="The path to the output file ex: outputs/test.utf.conll")
+                        help="The path to the output file ex: outputs/test.utf.conll")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
 
-	curr_dir = path.dirname(path.abspath(__file__))
-	args = get_args()
+    curr_dir = path.dirname(path.abspath(__file__))
+    args = get_args()
 
-	filename = "%s/%s" % (curr_dir, args.file_path)
-	output_file = "%s/%s" % (curr_dir, args.output_path)
-	sents = data_reader.load_data("ssf", filename, "")
-	convert_format(sents, output_file)
-
-
-
-
-
-
-
-
-
-
+    filename = "%s/%s" % (curr_dir, args.file_path)
+    output_file = "%s/%s" % (curr_dir, args.output_path)
+    sents = data_reader.load_data("ssf", filename, "")
+    convert_format(sents, output_file)

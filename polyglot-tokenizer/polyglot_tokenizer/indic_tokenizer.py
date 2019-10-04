@@ -33,8 +33,8 @@ class IndicTokenizer(BaseTokenizer):
         # split contractions right (both "'" and "’")
         self.numcs = re.compile("([0-9\u0966-\u096f])'s")
         self.naca = re.compile(
-            "([^%s0-9\u0966-\u096f\u0080-\u024f])'([%s\u0080-\u024f])" 
-            %((self.alpha,)*2))
+            "([^%s0-9\u0966-\u096f\u0080-\u024f])'([%s\u0080-\u024f])"
+            % ((self.alpha,)*2))
         # restore multi-dots
         if self.urd:
             self.restoreudots = re.compile(r'(DOTU)(\1*)MULTI')
@@ -51,7 +51,7 @@ class IndicTokenizer(BaseTokenizer):
                 ' ([.?\u06d4\u061f]) ([\)\}\]\'"> ]+) ')
         else:
             self.splitsenir1 = re.compile(
-                ' ([|.?\u0964\u0965]) ([\u0900-\u0d7f%s\(\{\[<])' %self.alpha_upper)
+                ' ([|.?\u0964\u0965]) ([\u0900-\u0d7f%s\(\{\[<])' % self.alpha_upper)
             self.splitsenir2 = re.compile(
                 ' ([|.?\u0964\u0965]) ([\)\}\]\'"> ]+) ')
 
@@ -218,13 +218,13 @@ class IndicTokenizer(BaseTokenizer):
             text = re.sub(
                 '(.)-([^0-9٠-٩۰-۹%s'
                 '\u0617-\u061a\u0620-\u065f\u066e-\u06d3'
-                '\u06d5\u06fa-\u06ff\ufe70-\ufeff\ufb50-\ufdff])' %self.alpha,
+                '\u06d5\u06fa-\u06ff\ufe70-\ufeff\ufb50-\ufdff])' % self.alpha,
                 r'\1 - \2',
                 text)
             text = re.sub(
                 '([^0-9٠-٩۰-۹%s'
                 '\u0617-\u061a\u0620-\u065f\u066e-\u06d3\u06d5'
-                '\u06fa-\u06ff\ufe70-\ufeff\ufb50-\ufdff])-(.)' %self.alpha,
+                '\u06fa-\u06ff\ufe70-\ufeff\ufb50-\ufdff])-(.)' % self.alpha,
                 r'\1 - \2',
                 text)
         text = text.split()

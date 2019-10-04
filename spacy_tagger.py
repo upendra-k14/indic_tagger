@@ -11,7 +11,8 @@ import re
 import os
 import tagger.src.spacy_data_reader as spacy_data_reader
 import argparse
-import sys, os.path as path
+import sys
+import os.path as path
 
 TAG_MAP = {
     'CC': {'pos': 'NOUN'},
@@ -47,15 +48,14 @@ TAG_MAP = {
 }
 
 
-
 def get_args():
     ''' This function parses and return arguments passed in'''
     parser = argparse.ArgumentParser(description='Scorer pipeline')
 
     parser.add_argument("-l", "--language", dest="language", type=str, metavar='<str>', required=True,
-                         help="Language of the dataset: tel (telugu), hin (hindi), tam (tamil), kan (kannada), pun (pubjabi)")
+                        help="Language of the dataset: tel (telugu), hin (hindi), tam (tamil), kan (kannada), pun (pubjabi)")
     parser.add_argument("-t", "--tag_type", dest="tag_type", type=str, metavar='<str>', required=True,
-                         help="Tag type: pos, chunk, parse")
+                        help="Tag type: pos, chunk, parse")
     parser.add_argument("-e", "--encoding", dest="encoding", type=str, metavar='<str>', required=False,
                         help="Encoding of the data (utf, wx)",
                         default="utf")
@@ -65,9 +65,10 @@ def get_args():
                         help="Test data path ex: data/test/telugu/test.txt",
                         default=True)
     parser.add_argument("-o", "--output_file", dest="output_path", type=str, metavar='<str>',
-                         help="The path to the output file",
-                         default=path.join(path.dirname(path.abspath(__file__)), "outputs", "output_file"))
+                        help="The path to the output file",
+                        default=path.join(path.dirname(path.abspath(__file__)), "outputs", "output_file"))
     return parser.parse_args()
+
 
 def pipeline():
     """Create a new model, set up the pipeline and train the tagger. In order to
@@ -81,13 +82,15 @@ def pipeline():
     print(lang)
     output_dir = path.join(path.dirname(path.abspath(__file__)), "outputs")
     if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        os.makedirs(output_dir)
 
-    model_path = "%s/spacymodels/%s/%s.model" % (curr_dir, args.language,  args.tag_type)    
-    data_path = "%s/data/train/%s/train.%s.conll" % (curr_dir, args.language, args.encoding)
+    model_path = "%s/spacymodels/%s/%s.model" % (
+        curr_dir, args.language,  args.tag_type)
+    data_path = "%s/data/train/%s/train.%s.conll" % (
+        curr_dir, args.language, args.encoding)
 
     file = open(data_path, "r")
-    TRAIN_DATA= spacy_data_reader.spacy_load_data(data_path)
+    TRAIN_DATA = spacy_data_reader.spacy_load_data(data_path)
 
     nlp = spacy.blank(lang)
     # add the tagger to the pipeline
@@ -127,6 +130,7 @@ def pipeline():
         nlp2 = spacy.load(output_dir)
         doc = nlp2(test_text)
         print('Tags', [(t.text, t.tag_, t.pos_) for t in doc])
+
 
 if __name__ == '__main__':
     pipeline()

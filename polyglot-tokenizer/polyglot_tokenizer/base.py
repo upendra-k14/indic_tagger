@@ -13,6 +13,7 @@ try:
 except NameError:
     unichr = chr
 
+
 class BaseTokenizer(object):
 
     def __init__(self, split_sen=False, fit=True):
@@ -29,15 +30,17 @@ class BaseTokenizer(object):
             self.NBP = set(fp.read().split())
         self.punctuation = set(string.punctuation)
         self.pemos = set([x for x in self.emoticons if
-            (any(c in self.punctuation for c in x) and all(ord(c)<256 for c in x))])
+                          (any(c in self.punctuation for c in x) and all(ord(c) < 256 for c in x))])
         self.NBP = self.NBP.union(set(string.ascii_letters[:26]))
         self.NBP_NUM = set(['No', 'no', 'Art', 'pp'])
         self.contractions = """ 'all 'am 'clock 'd 'll 'm n't
                             're 's 'sup 'tis 'twas 've 'n' """
         self.contractions = self.contractions.split() +\
             self.contractions.upper().split()
-        self.alpha = ''.join([unichr(x) for x in range(0x0000, 0x02b0) if unichr(x).isalpha()])
-        self.alpha += ''.join([unichr(x) for x in range(0x1e00, 0x1f00) if unichr(x).isalpha()])
+        self.alpha = ''.join([unichr(x) for x in range(
+            0x0000, 0x02b0) if unichr(x).isalpha()])
+        self.alpha += ''.join([unichr(x)
+                               for x in range(0x1e00, 0x1f00) if unichr(x).isalpha()])
         self.alpha_lower = ''.join([x for x in self.alpha if x.islower()])
         self.alpha_upper = ''.join([x for x in self.alpha if x.isupper()])
         if fit:
@@ -92,7 +95,8 @@ class BaseTokenizer(object):
         self.joints = re.compile(r'(^[A-Za-z][A-Za-z]+)[.]'
                                  r'([A-Za-z][A-Za-z]+$)')
         self.rpunct = re.compile(r'[.,\\!@#$%^&\'*()_+={\[}\]|";:<>?`~/]')
-        self.rep_punkt = re.compile(r'([%s][%s]+)' % (('.,\\!@#$%^&*()_+={\[}\]|;:<>?~/-',) * 2))
+        self.rep_punkt = re.compile(
+            r'([%s][%s]+)' % (('.,\\!@#$%^&*()_+={\[}\]|;:<>?~/-',) * 2))
         self.rep_quotes = re.compile(r'([\'"`][\'"`]+)')
 
     def unmask_htag_uref(self, text):
@@ -197,10 +201,10 @@ class BaseTokenizer(object):
                             continue
                         if wd.startswith(em) and (not (wd[br].isalpha() and em[-1].isalpha()))\
                                 and (not (wd[br].isdigit() and em[-1].isdigit())):
-                            wd = '%s %s' %(wd[:br], wd[br:])
+                            wd = '%s %s' % (wd[:br], wd[br:])
                         if wd.endswith(em) and (not (wd[-br-1].isalpha() and em[0].isalpha()))\
                                 and (not (wd[-br-1].isdigit() and em[0].isdigit())):
-                            wd = '%s %s' %(wd[:-br], wd[-br:])
+                            wd = '%s %s' % (wd[:-br], wd[-br:])
                 text.append(wd)
             text = ' '.join(text).split()
         else:
@@ -246,13 +250,13 @@ class BaseTokenizer(object):
                 dotless = word[:-1]
                 if dotless.isdigit() and dotless not in self.NBP:
                     word = dotless + ' .'
-                elif (('.' in dotless and re.search('[%s]' %self.alpha, dotless)) or
+                elif (('.' in dotless and re.search('[%s]' % self.alpha, dotless)) or
                         dotless in self.NBP):
                     pass
                 elif (dotless in self.NBP_NUM and
                       (i < text_len and words[i + 1][0].isdigit())):
                     pass
-                #elif i < text_len and words[i + 1][0].isdigit():
+                # elif i < text_len and words[i + 1][0].isdigit():
                 #    pass
                 else:
                     word = dotless + ' .'

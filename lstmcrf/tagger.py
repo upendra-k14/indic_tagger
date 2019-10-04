@@ -77,16 +77,17 @@ class Tagger(object):
 
     def _build_response1(self, sent, tags, prob):
         words = self.tokenizer(sent)
-        res = "" 
+        res = ""
         chunks = get_entities(tags)
         for index, obj in enumerate(words):
-            res = res + obj  +"\t"+tags[index] +"\n"
+            res = res + obj + "\t"+tags[index] + "\n"
             if "." in obj:
-                  res = res+"\n"
+                res = res+"\n"
             if "।" in obj:
-                  res = res+"\n"
+                res = res+"\n"
 
         return res
+
     def analyze(self, text):
 
         pred = self.predict_proba(text)

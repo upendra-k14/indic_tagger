@@ -31,11 +31,11 @@ class RomanTokenizer(BaseTokenizer):
         # split contractions
         self.numcs = re.compile("([0-9])'s")
         self.naca = re.compile(
-            "([^%s0-9])'([%s])" %((self.alpha,)*2))
+            "([^%s0-9])'([%s])" % ((self.alpha,)*2))
         # split hyphens
         self.hypheninnun = re.compile('(-?[0-9]-+[0-9]-?){,}')
-        self.ch_hyp_noalnum = re.compile('(.)-([^%s0-9])' %self.alpha)
-        self.noalnum_hyp_ch = re.compile('([^%s0-9])-(.)' %self.alpha)
+        self.ch_hyp_noalnum = re.compile('(.)-([^%s0-9])' % self.alpha)
+        self.noalnum_hyp_ch = re.compile('([^%s0-9])-(.)' % self.alpha)
         # split sentences
         if self.split_sen:
             self.splitsenr1 = re.compile(' ([.?]) ([%s])' % self.alpha_upper)
@@ -48,7 +48,7 @@ class RomanTokenizer(BaseTokenizer):
         #self.ltn_nonltn = re.compile('([\u0000-\u024f])([^\u0000-\u024f])')
         if self.lang in ['fi', 'sv']:
             self.specascii = re.compile(r'([\\!@#$%^&*()_+={\[}\]|";<>?`~/])')
-            self.split_colon = re.compile(r':([^%s])' %self.alpha_lower)
+            self.split_colon = re.compile(r':([^%s])' % self.alpha_lower)
 
     def tokenize(self, text):
         # normalize unicode punctituation
@@ -72,17 +72,21 @@ class RomanTokenizer(BaseTokenizer):
         # seperate "," outside
         text = self.notanumc.sub(r'\1 , ', text)
         text = self.cnotanum.sub(r' , \1', text)
-        # split contractions 
+        # split contractions
         text = self.nacna.sub(r"\1 ' \2", text)
         text = self.naca.sub(r"\1 ' \2", text)
         text = self.acna.sub(r"\1 ' \2", text)
         if self.lang in 'fr ga it ca pt ro sk sl'.split():
             text = self.aca.sub(r"\1' \2", text)
         elif self.lang == 'he':
-            text = re.sub(r'([%s])"([^%s])' %((self.hebrew_alpha,)*2), r'\1 " \2', text)
-            text = re.sub(r'([^%s])"([%s])' %((self.hebrew_alpha,)*2), r'\1 " \2', text)
-            text = re.sub(r'([^%s])"([^%s])' %((self.hebrew_alpha,)*2), r'\1 " \2', text)
-            text = re.sub(r"([a-zA-Z\u00c0-\u02b0])'([a-zA-Z\u00c0-\u02b0])", r"\1 '\2", text)
+            text = re.sub(r'([%s])"([^%s])' %
+                          ((self.hebrew_alpha,)*2), r'\1 " \2', text)
+            text = re.sub(r'([^%s])"([%s])' %
+                          ((self.hebrew_alpha,)*2), r'\1 " \2', text)
+            text = re.sub(r'([^%s])"([^%s])' %
+                          ((self.hebrew_alpha,)*2), r'\1 " \2', text)
+            text = re.sub(
+                r"([a-zA-Z\u00c0-\u02b0])'([a-zA-Z\u00c0-\u02b0])", r"\1 '\2", text)
         else:
             text = self.aca.sub(r"\1 '\2", text)
         text = self.numcs.sub(r"\1 's", text)

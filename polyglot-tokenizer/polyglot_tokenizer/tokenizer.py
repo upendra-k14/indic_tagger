@@ -13,7 +13,8 @@ class Tokenizer():
     def __init__(self, lang='en', split_sen=False,
                  smt=False, from_file=False):
         self.from_file = from_file
-        self.split_sen = split_sen
+        self.split_sen = True if split_sen else False
+        split_sen = False
         if lang in 'hsb da fo no nn'.split():
             lang = 'de'
         elif lang in ['et']:
@@ -29,19 +30,19 @@ class Tokenizer():
                                       smt=smt)
         elif lang in 'be bg cu kk ky ru uk sr mk mn myv'.split():
             self.tok = CyrillicTokenizer(lang=lang, split_sen=split_sen,
-                                      smt=smt)
+                                         smt=smt)
         elif lang == 'hy':
             self.tok = ArmenianTokenizer(lang=lang, split_sen=split_sen,
-                                      smt=smt)
+                                         smt=smt)
         elif lang == 'ka':
             self.tok = GeorgianTokenizer(lang=lang, split_sen=split_sen,
-                                      smt=smt)
+                                         smt=smt)
         elif lang == 'el':
             self.tok = GreekTokenizer(lang=lang, split_sen=split_sen,
                                       smt=smt)
         elif lang in 'he yi'.split():
             self.tok = HebrewTokenizer(lang=lang, split_sen=split_sen,
-                                      smt=smt)
+                                       smt=smt)
         else:
             self.tok = RomanTokenizer(lang=lang, split_sen=split_sen,
                                       smt=smt)
@@ -54,5 +55,13 @@ class Tokenizer():
             sentences = sentence.split('\n')
             for sent in sentences:
                 tok_sent = self.tok.tokenize(sent)
-                out_sents.extend(tok_sent)
+                out_sents.append(tok_sent)
+            print(out_sents[0])
             return out_sents
+
+    def tokenize_lines(self, sentencelist):
+        out_sents = []
+        for sent in sentencelist:
+            tok_sent = self.tok.tokenize(sent)
+            out_sents.append(tok_sent)
+        return out_sents

@@ -61,9 +61,11 @@ class Sequence(object):
             shuffle: Boolean (whether to shuffle the training data
                 before each epoch). `shuffle` will default to True.
         """
-        p = IndexTransformer(initial_vocab=self.initial_vocab, use_char=self.use_char)
+        p = IndexTransformer(
+            initial_vocab=self.initial_vocab, use_char=self.use_char)
         p.fit(x_train, y_train)
-        embeddings = filter_embeddings(self.embeddings, p._word_vocab.vocab, self.word_embedding_dim)
+        embeddings = filter_embeddings(
+            self.embeddings, p._word_vocab.vocab, self.word_embedding_dim)
 
         model = BiLSTMCRF(char_vocab_size=p.char_vocab_size,
                           word_vocab_size=p.word_vocab_size,

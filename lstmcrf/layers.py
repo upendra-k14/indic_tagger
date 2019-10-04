@@ -209,7 +209,8 @@ class CRF(Layer):
 
     def call(self, X, mask=None):
         if mask is not None:
-            assert K.ndim(mask) == 2, 'Input mask to CRF must have dim 2 if not None'
+            assert K.ndim(
+                mask) == 2, 'Input mask to CRF must have dim 2 if not None'
 
         if self.test_mode == 'viterbi':
             test_output = self.viterbi_decoding(X, mask)
@@ -268,7 +269,8 @@ class CRF(Layer):
                 assert self._inbound_nodes, 'CRF has not connected to any layer.'
                 assert not self._outbound_nodes, 'When learn_model="join", CRF must be the last layer.'
                 if self.sparse_target:
-                    y_true = K.one_hot(K.cast(y_true[:, :, 0], 'int32'), self.units)
+                    y_true = K.one_hot(
+                        K.cast(y_true[:, :, 0], 'int32'), self.units)
                 X = self._inbound_nodes[0].input_tensors[0]
                 mask = self._inbound_nodes[0].input_masks[0]
                 nloglik = self.get_negative_log_likelihood(y_true, X, mask)
@@ -342,12 +344,16 @@ class CRF(Layer):
         start = K.expand_dims(K.expand_dims(start, 0), 0)
         end = K.expand_dims(K.expand_dims(end, 0), 0)
         if mask is None:
-            energy = K.concatenate([energy[:, :1, :] + start, energy[:, 1:, :]], axis=1)
-            energy = K.concatenate([energy[:, :-1, :], energy[:, -1:, :] + end], axis=1)
+            energy = K.concatenate(
+                [energy[:, :1, :] + start, energy[:, 1:, :]], axis=1)
+            energy = K.concatenate(
+                [energy[:, :-1, :], energy[:, -1:, :] + end], axis=1)
         else:
             mask = K.expand_dims(K.cast(mask, K.floatx()))
-            start_mask = K.cast(K.greater(mask, self.shift_right(mask)), K.floatx())
-            end_mask = K.cast(K.greater(self.shift_left(mask), mask), K.floatx())
+            start_mask = K.cast(
+                K.greater(mask, self.shift_right(mask)), K.floatx())
+            end_mask = K.cast(
+                K.greater(self.shift_left(mask), mask), K.floatx())
             energy = energy + start_mask * start
             energy = energy + end_mask * end
         return energy
@@ -357,21 +363,25 @@ class CRF(Layer):
         Z = sum exp(-E) -> logZ = log sum exp(-E) =: -nlogZ
         """
         # should have logZ[:, i] == logZ[:, j] for any i, j
-        logZ = self.recursion(input_energy, mask, return_sequences=False, **kwargs)
+        logZ = self.recursion(input_energy, mask,
+                              return_sequences=False, **kwargs)
         return logZ[:, 0]
 
     def get_energy(self, y_true, input_energy, mask):
         """Energy = a1' y1 + u1' y1 + y1' U y2 + u2' y2 + y2' U y3 + u3' y3 + an' y3
         """
         input_energy = K.sum(input_energy * y_true, 2)  # (B, T)
-        chain_energy = K.sum(K.dot(y_true[:, :-1, :], self.chain_kernel) * y_true[:, 1:, :], 2)  # (B, T-1)
+        chain_energy = K.sum(
+            K.dot(y_true[:, :-1, :], self.chain_kernel) * y_true[:, 1:, :], 2)  # (B, T-1)
 
         if mask is not None:
             mask = K.cast(mask, K.floatx())
-            chain_mask = mask[:, :-1] * mask[:, 1:]  # (B, T-1), mask[:,:-1]*mask[:,1:] makes it work with any padding
+            # (B, T-1), mask[:,:-1]*mask[:,1:] makes it work with any padding
+            chain_mask = mask[:, :-1] * mask[:, 1:]
             input_energy = input_energy * mask
             chain_energy = chain_energy * chain_mask
-        total_energy = K.sum(input_energy, -1) + K.sum(chain_energy, -1)  # (B, )
+        total_energy = K.sum(input_energy, -1) + \
+            K.sum(chain_energy, -1)  # (B, )
 
         return total_energy
 
@@ -381,9 +391,11 @@ class CRF(Layer):
         """
         input_energy = self.activation(K.dot(X, self.kernel) + self.bias)
         if self.use_boundary:
-            input_energy = self.add_boundary_energy(input_energy, mask, self.left_boundary, self.right_boundary)
+            input_energy = self.add_boundary_energy(
+                input_energy, mask, self.left_boundary, self.right_boundary)
         energy = self.get_energy(y_true, input_energy, mask)
-        logZ = self.get_log_normalization_constant(input_energy, mask, input_length=K.int_shape(X)[1])
+        logZ = self.get_log_normalization_constant(
+            input_energy, mask, input_length=K.int_shape(X)[1])
         nloglik = logZ + energy
         if mask is not None:
             nloglik = nloglik / K.sum(K.cast(mask, K.floatx()), 1)
@@ -403,15 +415,21 @@ class CRF(Layer):
             else:
                 m = K.tf.slice(states[3], [0, t], [-1, 2])
             input_energy_t = input_energy_t * K.expand_dims(m[:, 0])
-            chain_energy = chain_energy * K.expand_dims(K.expand_dims(m[:, 0] * m[:, 1]))  # (1, F, F)*(B, 1, 1) -> (B, F, F)
+            # (1, F, F)*(B, 1, 1) -> (B, F, F)
+            chain_energy = chain_energy * \
+                K.expand_dims(K.expand_dims(m[:, 0] * m[:, 1]))
         if return_logZ:
-            energy = chain_energy + K.expand_dims(input_energy_t - prev_target_val, 2)  # shapes: (1, B, F) + (B, F, 1) -> (B, F, F)
+            # shapes: (1, B, F) + (B, F, 1) -> (B, F, F)
+            energy = chain_energy + \
+                K.expand_dims(input_energy_t - prev_target_val, 2)
             new_target_val = K.logsumexp(-energy, 1)  # shapes: (B, F)
             return new_target_val, [new_target_val, i + 1]
         else:
-            energy = chain_energy + K.expand_dims(input_energy_t + prev_target_val, 2)
+            energy = chain_energy + \
+                K.expand_dims(input_energy_t + prev_target_val, 2)
             min_energy = K.min(energy, 1)
-            argmin_table = K.cast(K.argmin(energy, 1), K.floatx())  # cast for tf-version `K.rnn`
+            # cast for tf-version `K.rnn`
+            argmin_table = K.cast(K.argmin(energy, 1), K.floatx())
             return argmin_table, [min_energy, i + 1]
 
     def recursion(self, input_energy, mask=None, go_backwards=False, return_sequences=True, return_logZ=True, input_length=None):
@@ -430,19 +448,23 @@ class CRF(Layer):
         If `return_logZ = False`, compute the Viterbi's best path lookup table.
         """
         chain_energy = self.chain_kernel
-        chain_energy = K.expand_dims(chain_energy, 0)  # shape=(1, F, F): F=num of output features. 1st F is for t-1, 2nd F for t
-        prev_target_val = K.zeros_like(input_energy[:, 0, :])  # shape=(B, F), dtype=float32
+        # shape=(1, F, F): F=num of output features. 1st F is for t-1, 2nd F for t
+        chain_energy = K.expand_dims(chain_energy, 0)
+        # shape=(B, F), dtype=float32
+        prev_target_val = K.zeros_like(input_energy[:, 0, :])
 
         if go_backwards:
             input_energy = K.reverse(input_energy, 1)
             if mask is not None:
                 mask = K.reverse(mask, 1)
 
-        initial_states = [prev_target_val, K.zeros_like(prev_target_val[:, :1])]
+        initial_states = [prev_target_val,
+                          K.zeros_like(prev_target_val[:, :1])]
         constants = [chain_energy]
 
         if mask is not None:
-            mask2 = K.cast(K.concatenate([mask, K.zeros_like(mask[:, :1])], axis=1), K.floatx())
+            mask2 = K.cast(K.concatenate(
+                [mask, K.zeros_like(mask[:, :1])], axis=1), K.floatx())
             constants.append(mask2)
 
         def _step(input_energy_i, states):
@@ -467,26 +489,33 @@ class CRF(Layer):
     def get_marginal_prob(self, X, mask=None):
         input_energy = self.activation(K.dot(X, self.kernel) + self.bias)
         if self.use_boundary:
-            input_energy = self.add_boundary_energy(input_energy, mask, self.left_boundary, self.right_boundary)
+            input_energy = self.add_boundary_energy(
+                input_energy, mask, self.left_boundary, self.right_boundary)
         input_length = K.int_shape(X)[1]
-        alpha = self.forward_recursion(input_energy, mask=mask, input_length=input_length)
-        beta = self.backward_recursion(input_energy, mask=mask, input_length=input_length)
+        alpha = self.forward_recursion(
+            input_energy, mask=mask, input_length=input_length)
+        beta = self.backward_recursion(
+            input_energy, mask=mask, input_length=input_length)
         if mask is not None:
-            input_energy = input_energy * K.expand_dims(K.cast(mask, K.floatx()))
-        margin = -(self.shift_right(alpha) + input_energy + self.shift_left(beta))
+            input_energy = input_energy * \
+                K.expand_dims(K.cast(mask, K.floatx()))
+        margin = -(self.shift_right(alpha) +
+                   input_energy + self.shift_left(beta))
         return self.softmaxNd(margin)
 
     def viterbi_decoding(self, X, mask=None):
         input_energy = self.activation(K.dot(X, self.kernel) + self.bias)
         if self.use_boundary:
-            input_energy = self.add_boundary_energy(input_energy, mask, self.left_boundary, self.right_boundary)
+            input_energy = self.add_boundary_energy(
+                input_energy, mask, self.left_boundary, self.right_boundary)
 
         argmin_tables = self.recursion(input_energy, mask, return_logZ=False)
         argmin_tables = K.cast(argmin_tables, 'int32')
 
         # backward to find best path, `initial_best_idx` can be any, as all elements in the last argmin_table are the same
         argmin_tables = K.reverse(argmin_tables, 1)
-        initial_best_idx = [K.expand_dims(argmin_tables[:, 0, 0])]  # matrix instead of vector is required by tf `K.rnn`
+        # matrix instead of vector is required by tf `K.rnn`
+        initial_best_idx = [K.expand_dims(argmin_tables[:, 0, 0])]
         if K.backend() == 'theano':
             initial_best_idx = [K.T.unbroadcast(initial_best_idx[0], 1)]
 
@@ -505,7 +534,8 @@ class CRF(Layer):
                 next_best_idx = K.T.unbroadcast(next_best_idx, 1)
             return next_best_idx, [next_best_idx]
 
-        _, best_paths, _ = K.rnn(find_path, argmin_tables, initial_best_idx, input_length=K.int_shape(X)[1], unroll=self.unroll)
+        _, best_paths, _ = K.rnn(find_path, argmin_tables, initial_best_idx,
+                                 input_length=K.int_shape(X)[1], unroll=self.unroll)
         best_paths = K.reverse(best_paths, 1)
         best_paths = K.squeeze(best_paths, 2)
 

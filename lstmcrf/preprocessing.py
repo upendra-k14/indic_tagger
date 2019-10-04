@@ -14,7 +14,6 @@ from keras.preprocessing.sequence import pad_sequences
 from lstmcrf.utils import Vocabulary
 
 
-
 def normalize_number(text):
     return re.sub(r'[0-9０１２３４５６７８９]', r'0', text)
 
@@ -190,5 +189,3 @@ def pad_nested_sequences(sequences, dtype='int32'):
             x[i, j, :len(word)] = word
 
     return x
-
-

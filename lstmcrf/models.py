@@ -80,7 +80,8 @@ class BiLSTMCRF(object):
 
     def build(self):
         # build word embedding
-        word_ids = Input(batch_shape=(None, None), dtype='int32', name='word_input')
+        word_ids = Input(batch_shape=(None, None),
+                         dtype='int32', name='word_input')
         inputs = [word_ids]
         if self._embeddings is None:
             word_embeddings = Embedding(input_dim=self._word_vocab_size,
@@ -96,17 +97,20 @@ class BiLSTMCRF(object):
 
         # build character based word embedding
         if self._use_char:
-            char_ids = Input(batch_shape=(None, None, None), dtype='int32', name='char_input')
+            char_ids = Input(batch_shape=(None, None, None),
+                             dtype='int32', name='char_input')
             inputs.append(char_ids)
             char_embeddings = Embedding(input_dim=self._char_vocab_size,
                                         output_dim=self._char_embedding_dim,
                                         mask_zero=True,
                                         name='char_embedding')(char_ids)
-            char_embeddings = TimeDistributed(Bidirectional(LSTM(self._char_lstm_size)))(char_embeddings)
+            char_embeddings = TimeDistributed(Bidirectional(
+                LSTM(self._char_lstm_size)))(char_embeddings)
             word_embeddings = Concatenate()([word_embeddings, char_embeddings])
 
         word_embeddings = Dropout(self._dropout)(word_embeddings)
-        z = Bidirectional(LSTM(units=self._word_lstm_size, return_sequences=True))(word_embeddings)
+        z = Bidirectional(LSTM(units=self._word_lstm_size,
+                               return_sequences=True))(word_embeddings)
         z = Dense(self._fc_dim, activation='tanh')(z)
 
         if self._use_crf:
@@ -165,7 +169,8 @@ class ELModel(object):
 
     def build(self):
         # build word embedding
-        word_ids = Input(batch_shape=(None, None), dtype='int32', name='word_input')
+        word_ids = Input(batch_shape=(None, None),
+                         dtype='int32', name='word_input')
         if self._embeddings is None:
             word_embeddings = Embedding(input_dim=self._word_vocab_size,
                                         output_dim=self._word_embedding_dim,
@@ -179,26 +184,30 @@ class ELModel(object):
                                         name='word_embedding')(word_ids)
 
         # build character based word embedding
-        char_ids = Input(batch_shape=(None, None, None), dtype='int32', name='char_input')
+        char_ids = Input(batch_shape=(None, None, None),
+                         dtype='int32', name='char_input')
         char_embeddings = Embedding(input_dim=self._char_vocab_size,
                                     output_dim=self._char_embedding_dim,
                                     mask_zero=True,
                                     name='char_embedding')(char_ids)
-        char_embeddings = TimeDistributed(Bidirectional(LSTM(self._char_lstm_size)))(char_embeddings)
+        char_embeddings = TimeDistributed(Bidirectional(
+            LSTM(self._char_lstm_size)))(char_embeddings)
 
         elmo_embeddings = Input(shape=(None, 1024), dtype='float32')
 
-        word_embeddings = Concatenate()([word_embeddings, char_embeddings, elmo_embeddings])
+        word_embeddings = Concatenate()(
+            [word_embeddings, char_embeddings, elmo_embeddings])
 
         word_embeddings = Dropout(self._dropout)(word_embeddings)
-        z = Bidirectional(LSTM(units=self._word_lstm_size, return_sequences=True))(word_embeddings)
+        z = Bidirectional(LSTM(units=self._word_lstm_size,
+                               return_sequences=True))(word_embeddings)
         z = Dense(self._fc_dim, activation='tanh')(z)
 
         crf = CRF(self._num_labels, sparse_target=False)
         loss = crf.loss_function
         pred = crf(z)
 
-        model = Model(inputs=[word_ids, char_ids, elmo_embeddings], outputs=pred)
+        model = Model(inputs=[word_ids, char_ids,
+                              elmo_embeddings], outputs=pred)
 
         return model, loss
-

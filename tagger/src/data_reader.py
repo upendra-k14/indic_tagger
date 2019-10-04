@@ -1,9 +1,11 @@
-import re, os
+import re
+import os
 import codecs
 import logging
 from polyglot_tokenizer import Tokenizer
 
 logger = logging.getLogger(__name__)
+
 
 def load_data(text_type, filename, lang, tokenize_text=False, split_sent=True):
     data_tuple = []
@@ -28,10 +30,10 @@ def load_data(text_type, filename, lang, tokenize_text=False, split_sent=True):
                     continue
                 elif ds[1] == "((":
                     start_c, chunk_tag = 1, ds[2]
-                    #print "hello-chunk tag",chunk_tag
+                    # print "hello-chunk tag",chunk_tag
                 if len(ds) > 2:
                     if ds[2]:
-                        #print "--",line,"--"
+                        # print "--",line,"--"
                         word, tag = ds[1], ds[2]
                         if start_c == -1:
                             sent.append((word, tag, ""))
@@ -48,7 +50,7 @@ def load_data(text_type, filename, lang, tokenize_text=False, split_sent=True):
                 if line != "":
                     print(line)
                     if len(ds) == 2:
-                        word, tag, chunk = ds[1], "",""
+                        word, tag, chunk = ds[1], "", ""
                     if len(ds) == 3:
                         word, tag, chunk = ds[1], ds[2], ""
                     if len(ds) == 4:
@@ -59,6 +61,7 @@ def load_data(text_type, filename, lang, tokenize_text=False, split_sent=True):
                     sent = []
         elif text_type == "txt":
             if split_sent == True:
+                logger.info("Reading data ...")
                 text = fp.read()
                 tok = Tokenizer(lang=lang, split_sen=split_sent)
                 tokenized_sents = tok.tokenize(text)

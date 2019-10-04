@@ -12,4 +12,3 @@ if __package__ is None and not hasattr(sys, "frozen"):
 
 if __name__ == '__main__':
     tok.main()
-

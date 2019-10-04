@@ -1,9 +1,11 @@
-import re, os
+import re
+import os
 import codecs
 import logging
 from irtokz import IndicTokenizer
 
 logger = logging.getLogger(__name__)
+
 
 def spacy_load_data(filename):
     file = open(filename, "r")
